@@ -12,8 +12,8 @@ func **(lhs: Int, rhs: Int) -> Int {
     return Int(pow(Double(lhs), Double(rhs)))
 }
 
-let ruleSet: UInt8 = 158
-let generations = 20
+let ruleSet: UInt8 = 225
+let generations = 100
 
 let size = 1 + 2 * (generations - 1)
 
@@ -25,10 +25,10 @@ func applyState(_ state: Bool, _ cellLoc: (Int, Int)) {
 }
 
 func initialize() {
-    for _ in 0..<size {
+    for _ in 0..<generations {
         grid.append(createColumn())
     }
-    applyState(true, (0, (size + 1) / 2))
+    applyState(true, (0, size / 2))
 }
 
 func createColumn() -> [Bool] {
@@ -41,14 +41,14 @@ func createColumn() -> [Bool] {
 
 func getCell(_ cellLoc: (Int, Int)) -> Bool {
     // Error prone if called before initialization
-    if cellLoc.0 < 0 || cellLoc.0 >= size || cellLoc.1 < 0 || cellLoc.1 >= size   {
+    if cellLoc.0 < 0 || cellLoc.0 >= generations || cellLoc.1 < 0 || cellLoc.1 >= size   {
         return false
     }
     return grid[cellLoc.0][cellLoc.1]
 }
 
 func getNeighborhood(_ cellLoc: (Int, Int)) -> [Bool] {
-    return [getCell((cellLoc.0 - 1, cellLoc.1 - 1)), getCell((cellLoc.0 - 1, cellLoc.1)), getCell((cellLoc.0 - 1, cellLoc.1 + 1))]
+    return [getCell((cellLoc.0 - 1, cellLoc.1 - 1)), getCell((cellLoc.0 - 1, cellLoc.1)), getCell((cellLoc.0 - 1, cellLoc.1 + 1))].reversed()
 }
 
 func ruleSetToArrayOfBools() -> [Bool] {
@@ -62,15 +62,16 @@ func ruleSetToArrayOfBools() -> [Bool] {
             remaining -= (2 ** (iterations - i))
         }
     }
-    return bools
+    return bools.reversed()
 }
 
 let rule = ruleSetToArrayOfBools()
 
 func calculateState(_ neighorhood: [Bool]) -> Bool {
     // Posibilities: TTT, TTF, TFT, TFF, FTT, FTF, FFT, FFF
-    // Rule example:  F    F    T    T    F    F    F    F
+    // Rule example:  F    F    T    T    F    T    T    F
     
+    neighorhood
     let ruleIndex = Int(neighorhood.enumerated().map{ $1 ? (2 ** $0) : 0 }.reduce(0, +))
     
     return rule[ruleIndex]
@@ -79,7 +80,7 @@ func calculateState(_ neighorhood: [Bool]) -> Bool {
 
 initialize()
 
-for row in 1..<size {
+for row in 1..<generations {
 
     for col in 0..<size {
         let loc = (row, col)
