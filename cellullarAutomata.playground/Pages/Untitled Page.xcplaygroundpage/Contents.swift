@@ -6,8 +6,16 @@
 import Foundation
 
 
-let ruleSet: UInt8 = 54
-let generations = 2
+infix operator **: DefaultPrecedence
+
+func **(lhs: Int, rhs: Int) -> Int {
+    return Int(pow(Double(lhs), Double(rhs)))
+}
+
+let ruleSet: UInt8 = 158
+let generations = 20
+
+let size = 1 + 2 * (generations - 1)
 
 var grid: [[Bool]] = []
 
@@ -17,15 +25,15 @@ func applyState(_ state: Bool, _ cellLoc: (Int, Int)) {
 }
 
 func initialize() {
-    for _ in 0..<generations {
+    for _ in 0..<size {
         grid.append(createColumn())
     }
-    applyState(true, (0, generations / 2))
+    applyState(true, (0, (size + 1) / 2))
 }
 
 func createColumn() -> [Bool] {
     var column: [Bool] = []
-    for _ in 0..<generations {
+    for _ in 0..<size {
         column.append(false)
     }
     return column
@@ -33,7 +41,7 @@ func createColumn() -> [Bool] {
 
 func getCell(_ cellLoc: (Int, Int)) -> Bool {
     // Error prone if called before initialization
-    if cellLoc.0 < 0 || cellLoc.0 >= generations || cellLoc.1 < 0 || cellLoc.1 >= generations   {
+    if cellLoc.0 < 0 || cellLoc.0 >= size || cellLoc.1 < 0 || cellLoc.1 >= size   {
         return false
     }
     return grid[cellLoc.0][cellLoc.1]
@@ -41,12 +49,6 @@ func getCell(_ cellLoc: (Int, Int)) -> Bool {
 
 func getNeighborhood(_ cellLoc: (Int, Int)) -> [Bool] {
     return [getCell((cellLoc.0 - 1, cellLoc.1 - 1)), getCell((cellLoc.0 - 1, cellLoc.1)), getCell((cellLoc.0 - 1, cellLoc.1 + 1))]
-}
-
-infix operator **: DefaultPrecedence
-
-func **(lhs: Int, rhs: Int) -> Int {
-    return Int(pow(Double(lhs), Double(rhs)))
 }
 
 func ruleSetToArrayOfBools() -> [Bool] {
@@ -67,7 +69,7 @@ let rule = ruleSetToArrayOfBools()
 
 func calculateState(_ neighorhood: [Bool]) -> Bool {
     // Posibilities: TTT, TTF, TFT, TFF, FTT, FTF, FFT, FFF
-    // Rule:          F    F    T    T    F    F    F    F
+    // Rule example:  F    F    T    T    F    F    F    F
     
     let ruleIndex = Int(neighorhood.enumerated().map{ $1 ? (2 ** $0) : 0 }.reduce(0, +))
     
@@ -77,9 +79,9 @@ func calculateState(_ neighorhood: [Bool]) -> Bool {
 
 initialize()
 
-for row in 1..<generations {
+for row in 1..<size {
 
-    for col in 0..<generations {
+    for col in 0..<size {
         let loc = (row, col)
         let neighbourHood = getNeighborhood(loc)
         let state = calculateState(neighbourHood)
